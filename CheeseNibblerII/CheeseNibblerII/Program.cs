@@ -19,7 +19,7 @@ namespace CheeseNibblerII
     }
 
     /// <summary>
-    /// Represents the position of an object on the grid
+    /// Represents the position of an object on the grid4
     /// </summary>
     public class Point
     {
@@ -146,6 +146,7 @@ namespace CheeseNibblerII
                     switch (Grid[x, y].Status)
                     {
                         case Point.PointStatus.Mouse:
+
                             Console.Write("[M]");
                             break;
                         case Point.PointStatus.Cheese:
@@ -310,22 +311,25 @@ namespace CheeseNibblerII
                 return true;
             }
                 //if the next move is on the same point as the cat or the cat&cheese
-            else if (nextMouseMove.Status == Point.PointStatus.Cat || nextMouseMove.Status == Point.PointStatus.CatAndCheese)
+            else if (nextMouseMove.Status == Point.PointStatus.Cat)
             {
                 //sets mouse has been pounced on to true
                 Mouse.HasBeenPouncedOn = true;
+                this.Mouse.Position.Status = Point.PointStatus.Cat;     
                 return false;
             }
                 //otherwise,
             else
             {
-                //empty old position
-                this.Grid[Mouse.Position.X, Mouse.Position.Y].Status = Point.PointStatus.Empty;
+                
                 //set mouse to the new position
                 this.Grid[nextX, nextY].Status = Point.PointStatus.Mouse;
-                this.Mouse.Position = this.Grid[nextX, nextY];
-                return false;
+
             }
+            //empty old position
+            this.Grid[Mouse.Position.X, Mouse.Position.Y].Status = Point.PointStatus.Empty;
+            this.Mouse.Position = this.Grid[nextX, nextY];
+            return false;
         }
 
         /// <summary>
@@ -427,10 +431,15 @@ namespace CheeseNibblerII
                     case Point.PointStatus.Cheese:
                         targetPosition.Status = Point.PointStatus.CatAndCheese;
                         break;
+                    case Point.PointStatus.Mouse:
+                        this.Mouse.HasBeenPouncedOn = true;
+                        targetPosition.Status = Point.PointStatus.Cat;
+                        break;
                     default:
                         targetPosition.Status = Point.PointStatus.Cat;
                         break;
                 }
+
                 // handle previous position status before executing move
                 if (cat.Position.Status == Point.PointStatus.CatAndCheese)
                 {
@@ -473,30 +482,23 @@ namespace CheeseNibblerII
         /// </summary>
         public void PlayGame()
         {
+            Mouse.HasBeenPouncedOn = false;
             //boolean finding cheese
             bool hasFoundCheese = false;
             //cheese counter
             this.CheeseCount = 0;
 
             //game play condition
-            while(Mouse.Energy > 0)
+            while(Mouse.Energy > 0 && !Mouse.HasBeenPouncedOn)
             {
                 //Draw the grid
                 DrawGrid();
                 //Get valid user input
                 ConsoleKey playerMove = GetUserMove();
 
-
                 //move the mouse and determine
                 //if the game has ended
                 hasFoundCheese = MoveMouse(playerMove);
-
-                //if the mouse has been caught
-                if (this.Mouse.HasBeenPouncedOn)
-                {
-                    //kill the mouse
-                    this.Mouse.Energy = 0;
-                }
 
                 //loops through the cats in cat list
                 foreach(Cat cat in Cats)
@@ -532,8 +534,6 @@ namespace CheeseNibblerII
             {
                 Console.WriteLine("You were eaten by the cat!");
             }
-            
-            Console.WriteLine("Would you like to play again?");
         }
     }
 }
