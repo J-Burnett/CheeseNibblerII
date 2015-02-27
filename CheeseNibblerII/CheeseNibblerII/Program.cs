@@ -187,24 +187,21 @@ namespace CheeseNibblerII
             //loops through possible keystrokes
             while (!validInput)
             {
+
                 //checks for valid input
                 switch (playerInput)
                 {
-                    case ConsoleKey.NumPad4://left
-                    case ConsoleKey.NumPad6://right
-                    case ConsoleKey.NumPad8://up
-                    case ConsoleKey.NumPad2://down
-                    case ConsoleKey.NumPad7://upper left
-                    case ConsoleKey.NumPad9://upper right
-                    case ConsoleKey.NumPad1://lower left
-                    case ConsoleKey.NumPad3://lower right
+                    case ConsoleKey.LeftArrow://left
+                    case ConsoleKey.RightArrow://right
+                    case ConsoleKey.UpArrow://up
+                    case ConsoleKey.DownArrow://down
                         validInput = true;
                         return playerInput;
                     default:
                         //Prints error messsage
                         Console.WriteLine("\nNot a valid move");
                         //reminds player which keys to press
-                        Console.WriteLine("Use the numpad to move the mouse");
+                        Console.WriteLine("Use the arrow keys to move the mouse");
                         playerInput = Console.ReadKey(true).Key;
                         return playerInput;
                 }
@@ -220,29 +217,27 @@ namespace CheeseNibblerII
         /// <returns>Whether or not it was valid</returns>
         public bool ValidMove(ConsoleKey playerInput)
         {
-            //look at each type of keypress
+
+            //sets up to see if move is within boundaries
+            int mouseCurrentX = this.Mouse.Position.X;
+            int mouseCurrentY = this.Mouse.Position.Y;
+
             switch (playerInput)
             {
-                //checks if the move is on the grid
-                case ConsoleKey.NumPad4:
-                    return this.Mouse.Position.X > 0;//left
-                case ConsoleKey.NumPad6:
-                    return this.Mouse.Position.X < 9;//right
-                case ConsoleKey.NumPad2:
-                    return this.Mouse.Position.Y< 9;//down
-                case ConsoleKey.NumPad8:
-                    return this.Mouse.Position.Y > 0;//up
-                case ConsoleKey.NumPad7:
-                    return this.Mouse.Position.Y > 0 && this.Mouse.Position.X > 0;//upper left
-                case ConsoleKey.NumPad9:
-                    return this.Mouse.Position.Y > 0 && this.Mouse.Position.X < 9;//upper right
-                case ConsoleKey.NumPad1:
-                    return this.Mouse.Position.Y < 9 && this.Mouse.Position.X > 0;//down left
-                case ConsoleKey.NumPad3:
-                    return this.Mouse.Position.Y < 9 && this.Mouse.Position.X < 9;//down right
+                //checks the move and returns it if it is valid
+                case ConsoleKey.UpArrow:
+                    return (mouseCurrentY > 0);
+                case ConsoleKey.DownArrow:
+                    return (mouseCurrentY < 9);
+                case ConsoleKey.RightArrow:
+                    return (mouseCurrentX  < 9);
+                case ConsoleKey.LeftArrow:
+                    return (mouseCurrentX > 0);
                 default:
+                    Console.WriteLine("Not a valid move");
                     break;
             }
+            
             return false;
         }
 
@@ -253,6 +248,9 @@ namespace CheeseNibblerII
         /// <returns></returns>
         public bool MoveMouse(ConsoleKey playerInput)
         {
+            //decrements mouse energy
+            Mouse.Energy--;
+
             //creates new positions for the mouse
             int nextX = this.Mouse.Position.X;
             int nextY = this.Mouse.Position.Y;
@@ -262,40 +260,22 @@ namespace CheeseNibblerII
                 //if so, moves the mouse accordingly
                 switch (playerInput)
                 {
-                    case ConsoleKey.NumPad4://left
-                        nextX -= 1;
+                    case ConsoleKey.LeftArrow://left
+                        nextX--;
                         break;
-                    case ConsoleKey.NumPad6://right
-                        nextX += 1;
+                    case ConsoleKey.RightArrow://right
+                        nextX++;
                         break;
-                    case ConsoleKey.NumPad2://down
-                        nextY += 1;
+                    case ConsoleKey.DownArrow://down
+                        nextY++;
                         break;
-                    case ConsoleKey.NumPad8://up
-                        nextY -= 1;
-                        break;
-                    case ConsoleKey.NumPad7://upper left
-                        nextX -= 1;
-                        nextY -= 1;
-                        break;
-                    case ConsoleKey.NumPad9://upper right
-                        nextX += 1;
-                        nextY -= 1;
-                        break;
-                    case ConsoleKey.NumPad1://down left
-                        nextX -= 1;
-                        nextY += 1;
-                        break;
-                    case ConsoleKey.NumPad3://down right
-                        nextX += 1;
-                        nextY += 1;
+                    case ConsoleKey.UpArrow://up
+                        nextY--;
                         break;
                     default:
                         break;
                 }
-                //decrements mouse 
-                //energy after each move
-                Mouse.Energy--;
+              
             }
             //sets mouse's next move on the grid
             Point nextMouseMove = this.Grid[nextX, nextY];
@@ -304,31 +284,41 @@ namespace CheeseNibblerII
             if (nextMouseMove.Status == Point.PointStatus.Cheese)
             {
                 //if so, empty old mouse point
-                this.Grid[Mouse.Position.X, Mouse.Position.Y].Status = Point.PointStatus.Empty;
+                this.Mouse.Position.Status = Point.PointStatus.Empty;
                 //updates to new mouse point
-                this.Grid[nextX, nextY].Status = Point.PointStatus.Mouse;
-                this.Mouse.Position = this.Grid[nextX, nextY];
+                this.Mouse.Position = nextMouseMove;
+                this.Mouse.Position.Status = Point.PointStatus.Mouse;
+           
                 return true;
             }
                 //if the next move is on the same point as the cat or the cat&cheese
-            else if (nextMouseMove.Status == Point.PointStatus.Cat)
+            else if (nextMouseMove.Status == Point.PointStatus.Cat || nextMouseMove.Status == Point.PointStatus.CatAndCheese)
             {
+              
+                //if so, empty old mouse point
+                this.Mouse.Position.Status = Point.PointStatus.Empty;
+                //updates to new mouse point
+                this.Mouse.Position = nextMouseMove;
+                this.Mouse.Position.Status = Point.PointStatus.Cat;
                 //sets mouse has been pounced on to true
                 Mouse.HasBeenPouncedOn = true;
-                this.Mouse.Position.Status = Point.PointStatus.Cat;     
                 return false;
             }
                 //otherwise,
             else
             {
-                
+                //if so, empty old mouse point
+                this.Mouse.Position.Status = Point.PointStatus.Empty;
+                //updates to new mouse point
+                this.Mouse.Position = nextMouseMove;
                 //set mouse to the new position
-                this.Grid[nextX, nextY].Status = Point.PointStatus.Mouse;
+                this.Mouse.Position.Status = Point.PointStatus.Mouse;
 
             }
-            //empty old position
-            this.Grid[Mouse.Position.X, Mouse.Position.Y].Status = Point.PointStatus.Empty;
-            this.Mouse.Position = this.Grid[nextX, nextY];
+            ////if so, empty old mouse point
+            //this.Mouse.Position.Status = Point.PointStatus.Empty;
+            ////updates to new mouse point
+            //this.Mouse.Position = nextMouseMove;
             return false;
         }
 
