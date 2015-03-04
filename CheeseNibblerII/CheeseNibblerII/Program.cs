@@ -146,17 +146,24 @@ namespace CheeseNibblerII
                     switch (Grid[x, y].Status)
                     {
                         case Point.PointStatus.Mouse:
-
+                            Console.ForegroundColor = ConsoleColor.Blue;
                             Console.Write("[M]");
+                            Console.ResetColor();
                             break;
                         case Point.PointStatus.Cheese:
+                            Console.ForegroundColor = ConsoleColor.Yellow;
                             Console.Write("[C]");
+                            Console.ResetColor();
                             break;
                         case Point.PointStatus.Cat:
+                            Console.ForegroundColor = ConsoleColor.Red;
                             Console.Write("[X]");
+                            Console.ResetColor();
                             break;
                         case Point.PointStatus.CatAndCheese:
+                            Console.ForegroundColor = ConsoleColor.Red;
                             Console.Write("[X]");
+                            Console.ResetColor();
                             break;
                         default:
                             Console.Write("[ ]");
